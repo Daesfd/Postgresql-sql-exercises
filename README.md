@@ -446,3 +446,224 @@ WHERE w2.temperature > w1.temperature
 ### Explicação
 Junta-se duas colunas iguais, considerando que a data da tabela w1 deve ser o dia anterior da data da tabela w2.
 Após isso, considera-se que a temperatura da segunda tabela (dia n) seja maior que a temperatura da primeira tabela (dia n-1) e seleciona-se o id da segunda tabela.
+
+
+
+## 262. Trips and Users
+
+Table: Trips
+```
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| id          | int      |
+| client_id   | int      |
+| driver_id   | int      |
+| city_id     | int      |
+| status      | enum     |
+| request_at  | date     |     
++-------------+----------+
+```
+id is the primary key for this table.
+The table holds all taxi trips. Each trip has a unique id, while client_id and driver_id are foreign keys to the users_id at the Users table.
+Status is an ENUM type of ('completed', 'cancelled_by_driver', 'cancelled_by_client').
+ 
+
+Table: Users
+```
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| users_id    | int      |
+| banned      | enum     |
+| role        | enum     |
++-------------+----------+
+```
+users_id is the primary key for this table.
+The table holds all users. Each user has a unique users_id, and role is an ENUM type of ('client', 'driver', 'partner').
+banned is an ENUM type of ('Yes', 'No').
+ 
+
+The cancellation rate is computed by dividing the number of canceled (by client or driver) requests with unbanned users by the total number of requests with unbanned users on that day.
+
+Write a SQL query to find the cancellation rate of requests with unbanned users (both client and driver must not be banned) each day between "2013-10-01" and "2013-10-03". Round Cancellation Rate to two decimal points.
+
+Return the result table in any order.
+
+### Resolução
+SELECT Request_at AS Day, ROUND(SUM(IF(Status != 'completed',1,0))/COUNT(Status),2) AS 'Cancellation Rate'
+FROM Trips
+WHERE Request_at >= '2013-10-01' AND Request_at <= '2013-10-03'
+    AND Client_id NOT IN (SELECT Users_id FROM Users WHERE Banned = 'Yes')
+    AND Driver_id NOT IN (SELECT Users_id FROM Users WHERE Banned = 'Yes')
+GROUP BY Request_at
+
+### Explicação
+Problemas:
+ 1 - taxa de cancelamento - Feita dividindo o número de cancelamentos com o número total de corridas - Usa-se ROUND() para usar duas casas decimais
+ 2 - datas - Usa-se WHERE e coloca duas condições
+ 3 - Usuários não banidos - Faz subqueries para escolher apenas o usuário e o motorista não banidos, com isso condiciona-se na query principal, usando WHERE/AND
+
+## 511. Game Play Analysis I
+
+Table: Activity
+```
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+```
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some games.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on someday using some device.
+ 
+
+Write an SQL query to report the first login date for each player.
+
+Return the result table in any order.
+
+### Resolução
+SELECT player_id, MIN(event_date) AS first_login
+FROM Activity
+GROUP BY player_id
+
+### Explicação
+Problema: 
+ 1 - Esolha de apenas o primeiro login - Usa-se a função MIN() e agrupa os dados de acordo com o player_id, logo cada player_id só mostrará o primeiro login
+
+## 512. Game Play Analysis II
+
+Table: Activity
+```
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+```
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some game.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on some day using some device.
+Write a SQL query that reports the device that is first logged in for each player.
+
+### Resolução
+SELECT player_id, device_id
+FROM (SELECT player_id, device_id, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY event_date) AS r
+      FROM Activity) AS subq
+WHERE r = 1
+
+### Explicação
+Primeiro, cria-se uma subquery, a qual particiona o player_id, ordenando pela event_data, com isso, sabe-se, ao usar ROW_NUMBER(), a primeira vez que cada pessoa usou o computador.
+Logo, ao usar uma condição WHERE r = 1, na query principal, decobre-se o primeiro dispositivo que cada pessoa usou.
+
+
+
+## 534. Game Play Analysis III
+
+Table: Activity
+```
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+```
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some game.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on some day using some device.
+ 
+
+Write an SQL query that reports for each player and date, how many games played so far by the player. That is, the total number of games played by the player until that date. 
+
+### Resolução
+SELECT a.player_id, a.event_date, SUM(b.games_played)
+FROM Activity a
+JOIN Activity b ON a.player_id = b.player_id AND a.event_date >= b.event_date
+GROUP BY a.player_id, a.event_date
+
+### Explicação
+Cria-se um SELF JOIN, o qual considera os elementos de mesmo indicie e que a data da primeira tabela seja maior que a data da segunda tabela.
+Com isso, seleciona-se a SUM() dos jogos jogados na segunda tabela.
+
+
+
+## 550. Game Play Analysis IV
+
+Table: Activity
+```
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+```
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some game.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on some day using some device.
+ 
+
+Write an SQL query that reports the fraction of players that logged in again on the day after the day they first logged in, rounded to 2 decimal places. In other words, you need to count the number of players that logged in for at least two consecutive days starting from their first login date, then divide that number by the total number of players.
+
+### Resolução
+SELECT ROUND(COUNT(DISTINCT b.player_id)/COUNT(DISINCT a.player_id),2) AS Fraction
+FROM (SELECT player_id, MIN(event_date) AS event_date
+      FROM Activity
+      GROUP BY player_id) AS a
+LEFT JOIN Actibity b ON a.player_id = b.player_id AND a.event_date + 1 = b.event_date
+
+### Explicação
+Primeiro, cria-se uma subquery, selecionando o primeiro login e agrupa-a considerando o player_id.
+Após isso, usa-se um LEFT JOIN, considerando que o player_id da primeira tabela seja igual ao player_id da segunda tabela e que a adição da data de login da primeira tabela (que pela subquery, é o primeiro login) com 1 seja a data da segunda tabela. Desse modo, há a escolha de apenas os logins sucessivos, considerando o primeiro como o primeiro login feito.
+Assim, é selecionado o número de jogadores distintos, que logaram no dia seguinte de seu primeiro login, dividido pelo número total de jogadores. E, alem disso, Arredonda-se, em duas casas decimais, tal fração.
+
+
+
+## 570. Managers with at Least 5 Direct Reports
+
+The Employee table holds all employees including their managers. Every employee has an Id, and there is also a column for the manager Id.
+```
++------+----------+-----------+----------+
+|Id    |Name 	  |Department |ManagerId   |
++------+----------+-----------+----------+
+|101   |John 	  |A 	      |null          |
+|102   |Dan 	   |A 	      |101           |
+|103   |James 	 |A 	      |101           |
+|104   |Amy 	   |A 	      |101           |
+|105   |Anne 	  |A 	      |101           |
+|106   |Ron 	   |B 	      |101           |
++------+----------+-----------+----------+
+```
+Given the Employee table, write a SQL query that finds out managers with at least 5 direct report. For the above table, your SQL query should return:
+```
++-------+
+| Name  |
++-------+
+| John  |
++-------+
+```
+Note:
+No one would report to himself.
+
+### Resolução
+SELECT Name
+FROM Employee
+WHERE Id IN (SELECT ManagerId FROM Employee
+            GROUP BY ManagerId
+            HAVING (COUNT(DISTINCT Id)) >= 5)
+
+### Explicação
+Cria-se uma subquery, a qual seleciona apenas o ManagerId referenciado por 5 Id diferentes.
+Após isso, seleciona o nome de tal Id referenciado.
