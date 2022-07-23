@@ -33,10 +33,12 @@ Each row of this table contains information about the city and state of one pers
 Write an SQL query to report the first name, last name, city, and state of each person in the Person table. If the address of a personId is not present in the Address table, report null instead.
 
 ### Resolução
+```
 SELECT firstName, lastName, city, state
 FROM Person p
 LEFT JOIN Address a
 on p.personId = a.personId;
+```
 
 ### Explicação
 Uso do left join para combinar as duas tabelas, considerando o id da pessoa como a conexão entre as duas tabelas e, com isso, a seleção das colunas pedidas.
@@ -61,12 +63,14 @@ Each row of this table contains information about the salary of an employee.
 Write an SQL query to report the second highest salary from the Employee table. If there is no second highest salary, the query should report null.
 
 ### Resolução
+```
 SELECT IFNULL(
     (SELECT DISTINCT Salary
     FROM Employee
     ORDER BY Salary DESC
     LIMIT 1
     OFFSET 1), NULL) AS SecondHighestSalary
+```
     
 ### Explicação
 Seleção de salários distintos, ordenados de modo decrescente e exclusão do maior salário com o uso de offset.
@@ -92,6 +96,7 @@ Each row of this table contains information about the salary of an employee.
 Write an SQL query to report the nth highest salary from the Employee table. If there is no nth highest salary, the query should report null.
 
 ### Resolução
+```
 CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
 BEGIN
   RETURN (
@@ -102,6 +107,7 @@ BEGIN
      OFFSET N - 1
   );
 END
+```
 
 ### Explicação
 Criação de uma função, a qual recebe um número inteiro e retorna um npumero inteiro, o qual é n-ésimo maior salário.
@@ -133,8 +139,10 @@ After a tie, the next ranking number should be the next consecutive integer valu
 Return the result table ordered by score in descending order.
 
 ### Resolução
+```
 SELECT score, DENSE_RANK() OVER (ORDER BY Score DESC) AS 'Rank'
 FROM Scores
+```
 
 ### Explicação
 Como é necessário rankear do maior para o menor, usa-se ORDER BY desc.
@@ -164,11 +172,13 @@ Write an SQL query to find all numbers that appear at least three times consecut
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT a.NUM AS ConsecutiveNums
 FROM Logs a, Logs b, Logs c
 JOIN Logs b ON a.id = b.id + 1 AND a.Num = b.Num
 JOIN Logs c ON a.id = c.id + 2 AND a.Num = c.Num
-    
+```
+
 ### Explicação
 Usando três tabelas iguais, compara-se, usando JOIN, se o número da tabela 'a' é igual ao número da tabela 'b', considerando que o id desse número da tabela 'b' seja o id da tabela 'a' + 1.
 Após isso, faz-se o mesmo com a terceira tabela, mas considera-se que o id da tabela 'c' seja o id da tabela 'a' + 2.
@@ -197,10 +207,12 @@ Write an SQL query to find the employees who earn more than their managers.
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT e1.name as Employee
 FROM Employee e1
 JOIN Employee e2 on e1.ManagerId = e2.id
 WHERE e1.Salary > e2.Salary
+```
 
 ### Explicação
 Junta-se duas tabelas, considerando que o ManagerId da primeira tabela seja igual ao id da segunda tabela, indicando, assim, a conexão entre o trabalhador, o qual tem um ManagerId, e seu superior, o qual tem seu id ligado pelo ManagerId do trabalhador.
@@ -228,11 +240,13 @@ Write an SQL query to report all the duplicate emails.
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT Email
 FROM (SELECT Email, COUNT(Email) AS c
       FROM Person
       GROUP BY Email) AS temp_table
 WHERE c > 1
+```
 
 ### Explicação
 Faz-se uma subquery, criando uma coluna, que tem o número de vezes que um email aparece (COUNT(EMAIL)).
@@ -274,10 +288,12 @@ Write an SQL query to report all customers who never order anything.
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT name AS Customers
 FROM Customers
 LEFT JOIN Orders ON Customers.id = Orders.CustomerId
 WHERE CustomerId IS NULL
+```
 
 ### Explicação
 Junta-se as tabelas, considerando que o id da tabela Customer seja igual o CustomerId da tabela Orders.
@@ -321,6 +337,7 @@ Write an SQL query to find employees who have the highest salary in each of the 
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT Department.name AS 'Department', Employee.name AS 'Employee', Salary
 FROM Employee
 JOIN Department ON Employee.DepartmentiD = Department.Id
@@ -329,6 +346,7 @@ WHERE (Employee.DepartmentId, Salary) IN (
             FROM Employee
             GROUP BY DepartmentId
 )
+```
 
 ### Explicação
 Primeiro, cria-se um subquery para selecionar o salário máximo de cada departamento.
@@ -374,11 +392,13 @@ Write an SQL query to find the employees who are high earners in each of the dep
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT Department.name AS 'Department', e.name AS 'Employee', e.Salary
 FROM (SELECT DepartmentId, Name, Salary, DENSE_RANK() OVER (PARTITION BY DepartmentId ORDER BY Salary DESC) AS r
       FROM Employee) AS e
 JOIN Department ON e.DepartmentId = Department.id
 WHERE r <= 3
+```
 
 ### Explicação
 Cria-se uma subquery, a qual cria uma tabela (e) com uma coluna (r) de DENSE_RANK em partições de DepartmentId e ordana-a em relação a salários decrescentes.
@@ -406,10 +426,12 @@ Write an SQL query to delete all the duplicate emails, keeping only one unique e
 After running your script, the answer shown is the Person table. The driver will first compile and run your piece of code and then show the Person table. The final order of the Person table does not matter.
 
 ### Resolução
+```
 DELETE p2
 FROM Person p1
 JOIN Person p2 ON p1.Email = p2.Email
 AND p1.id < p2.id
+```
 
 ### Explicação
 Junta-se duas tabelas iguais, igualando-se os emails das duas tabelas e coloca a condição de que o id da segunda tabela seja maior que o id da primeira tabela. Com isso, desse modo, pega-se os emails repitidos.
@@ -438,10 +460,12 @@ Write an SQL query to find all dates' Id with higher temperatures compared to it
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT w2.id
 FROM Weather w1
 JOIN Weather w2 ON DATEDIFF(w1.recordDate, w2.recordDate) = -1
 WHERE w2.temperature > w1.temperature
+```
 
 ### Explicação
 Junta-se duas colunas iguais, considerando que a data da tabela w1 deve ser o dia anterior da data da tabela w2.
@@ -491,12 +515,14 @@ Write a SQL query to find the cancellation rate of requests with unbanned users 
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT Request_at AS Day, ROUND(SUM(IF(Status != 'completed',1,0))/COUNT(Status),2) AS 'Cancellation Rate'
 FROM Trips
 WHERE Request_at >= '2013-10-01' AND Request_at <= '2013-10-03'
     AND Client_id NOT IN (SELECT Users_id FROM Users WHERE Banned = 'Yes')
     AND Driver_id NOT IN (SELECT Users_id FROM Users WHERE Banned = 'Yes')
 GROUP BY Request_at
+```
 
 ### Explicação
 Problemas:
@@ -527,9 +553,11 @@ Write an SQL query to report the first login date for each player.
 Return the result table in any order.
 
 ### Resolução
+```
 SELECT player_id, MIN(event_date) AS first_login
 FROM Activity
 GROUP BY player_id
+```
 
 ### Explicação
 Problema: 
@@ -554,10 +582,12 @@ Each row is a record of a player who logged in and played a number of games (pos
 Write a SQL query that reports the device that is first logged in for each player.
 
 ### Resolução
+```
 SELECT player_id, device_id
 FROM (SELECT player_id, device_id, ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY event_date) AS r
       FROM Activity) AS subq
 WHERE r = 1
+```
 
 ### Explicação
 Primeiro, cria-se uma subquery, a qual particiona o player_id, ordenando pela event_data, com isso, sabe-se, ao usar ROW_NUMBER(), a primeira vez que cada pessoa usou o computador.
@@ -586,10 +616,12 @@ Each row is a record of a player who logged in and played a number of games (pos
 Write an SQL query that reports for each player and date, how many games played so far by the player. That is, the total number of games played by the player until that date. 
 
 ### Resolução
+```
 SELECT a.player_id, a.event_date, SUM(b.games_played)
 FROM Activity a
 JOIN Activity b ON a.player_id = b.player_id AND a.event_date >= b.event_date
 GROUP BY a.player_id, a.event_date
+```
 
 ### Explicação
 Cria-se um SELF JOIN, o qual considera os elementos de mesmo indicie e que a data da primeira tabela seja maior que a data da segunda tabela.
@@ -618,11 +650,13 @@ Each row is a record of a player who logged in and played a number of games (pos
 Write an SQL query that reports the fraction of players that logged in again on the day after the day they first logged in, rounded to 2 decimal places. In other words, you need to count the number of players that logged in for at least two consecutive days starting from their first login date, then divide that number by the total number of players.
 
 ### Resolução
+```
 SELECT ROUND(COUNT(DISTINCT b.player_id)/COUNT(DISINCT a.player_id),2) AS Fraction
 FROM (SELECT player_id, MIN(event_date) AS event_date
       FROM Activity
       GROUP BY player_id) AS a
 LEFT JOIN Actibity b ON a.player_id = b.player_id AND a.event_date + 1 = b.event_date
+```
 
 ### Explicação
 Primeiro, cria-se uma subquery, selecionando o primeiro login e agrupa-a considerando o player_id.
@@ -636,14 +670,14 @@ Assim, é selecionado o número de jogadores distintos, que logaram no dia segui
 The Employee table holds all employees including their managers. Every employee has an Id, and there is also a column for the manager Id.
 ```
 +------+----------+-----------+----------+
-|Id    |Name 	  |Department |ManagerId   |
+|Id    |Name 	  |Department |ManagerId |
 +------+----------+-----------+----------+
-|101   |John 	  |A 	      |null          |
-|102   |Dan 	   |A 	      |101           |
-|103   |James 	 |A 	      |101           |
-|104   |Amy 	   |A 	      |101           |
-|105   |Anne 	  |A 	      |101           |
-|106   |Ron 	   |B 	      |101           |
+|101   |John 	  |A 	      |null      |
+|102   |Dan 	  |A 	      |101       |
+|103   |James 	  |A 	      |101       |
+|104   |Amy 	  |A 	      |101       |
+|105   |Anne 	  |A 	      |101       |
+|106   |Ron 	  |B 	      |101       |
 +------+----------+-----------+----------+
 ```
 Given the Employee table, write a SQL query that finds out managers with at least 5 direct report. For the above table, your SQL query should return:
@@ -658,11 +692,13 @@ Note:
 No one would report to himself.
 
 ### Resolução
+```
 SELECT Name
 FROM Employee
 WHERE Id IN (SELECT ManagerId FROM Employee
             GROUP BY ManagerId
             HAVING (COUNT(DISTINCT Id)) >= 5)
+```
 
 ### Explicação
 Cria-se uma subquery, a qual seleciona apenas o ManagerId referenciado por 5 Id diferentes.
