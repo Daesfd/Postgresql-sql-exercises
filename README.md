@@ -1196,3 +1196,76 @@ Agrupa-se a tabela de acordo com o actor_id e director_id, com isso, caso haja, 
 
 ### Explicação
 
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
