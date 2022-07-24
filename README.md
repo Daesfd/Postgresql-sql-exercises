@@ -703,3 +703,496 @@ WHERE Id IN (SELECT ManagerId FROM Employee
 ### Explicação
 Cria-se uma subquery, a qual seleciona apenas o ManagerId referenciado por 5 Id diferentes.
 Após isso, seleciona o nome de tal Id referenciado.
+
+
+
+## 584. Find Customer Referee
+
+Table: Customer
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| name        | varchar |
+| referee_id  | int     |
++-------------+---------+
+```
+id is the primary key column for this table.
+Each row of this table indicates the id of a customer, their name, and the id of the customer who referred them.
+ 
+
+Write an SQL query to report the names of the customer that are not referred by the customer with id = 2.
+
+Return the result table in any order.
+
+### Resolução
+```
+SELECT name
+FROM Customer
+WHERE referee_id != 2 OR referee_id IS NULL
+```
+
+### Explicação
+Usa-se uma condição, a qual não escolhe caso o id seja referido pelo id = 2 ou seja nulo.
+
+
+
+## 586. Customer Placing the Largest Number of Orders
+
+Table: Orders
+```
++-----------------+----------+
+| Column Name     | Type     |
++-----------------+----------+
+| order_number    | int      |
+| customer_number | int      |
++-----------------+----------+
+```
+order_number is the primary key for this table.
+This table contains information about the order ID and the customer ID.
+ 
+
+Write an SQL query to find the customer_number for the customer who has placed the largest number of orders.
+
+The test cases are generated so that exactly one customer will have placed more orders than any other customer.
+
+### Resolução
+```
+SELECT customer_number
+FROM Orders
+GROUP BY customer_number
+ORDER BY COUNT(*) DESC
+LIMIT 1
+```
+
+### Explicação
+Cada ordem é pedida por um cliente, logo, a query é agrupada pelo customer_number e ordenada, de modo decrescente. pelo número de pedidos por clientes.
+Após isso, é limitada em apenas 1 cliente, que é o cliente que mais pediu.
+
+
+
+## 595. Big Countries
+
+Table: World
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| name        | varchar |
+| continent   | varchar |
+| area        | int     |
+| population  | int     |
+| gdp         | int     |
++-------------+---------+
+```
+name is the primary key column for this table.
+Each row of this table gives information about the name of a country, the continent to which it belongs, its area, the population, and its GDP value.
+ 
+
+A country is big if:
+
+it has an area of at least three million (i.e., 3000000 km2), or
+it has a population of at least twenty-five million (i.e., 25000000).
+Write an SQL query to report the name, population, and area of the big countries.
+
+Return the result table in any order.
+
+### Resolução
+```
+SELECT name, population, area
+FROM WORLD
+WHERE area >= 3000000
+UNION
+SELECT name, population, area
+FROM WORLD
+WHERE population >= 25000000
+```
+
+### Explicação
+Cria-se duas condições, as quais são unidas por UNION. A primeira delas é a exigência de uma area >= 3000000 km2, a segunda delas é a exigência de uma população >= 25000000.
+
+
+
+## 596. Classes More Than 5 Students
+
+Table: Courses
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| student     | varchar |
+| class       | varchar |
++-------------+---------+
+```
+(student, class) is the primary key column for this table.
+Each row of this table indicates the name of a student and the class in which they are enrolled.
+ 
+
+Write an SQL query to report all the classes that have at least five students.
+
+Return the result table in any order.
+
+### Resolução
+```
+SELECT class
+FROM (
+    SELECT class, COUNT(DISTINCT student) AS num
+    FROM courses
+    GROUP BY class) AS temp_table
+WHERE num >= 5
+```
+
+### Explicação
+Cria-se uma subquery, a qual cria uma coluna que conta os números de diferentes estudantes e agrupa-os em diferentes classes.
+Após isso, na query principal, escolhe-se a classe com um numéro de estudantes maior ou igual a 5.
+
+
+
+## 601. Human Traffic of Stadium
+
+Table: Stadium
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| visit_date    | date    |
+| people        | int     |
++---------------+---------+
+```
+visit_date is the primary key for this table.
+Each row of this table contains the visit date and visit id to the stadium with the number of people during the visit.
+No two rows will have the same visit_date, and as the id increases, the dates increase as well.
+ 
+
+Write an SQL query to display the records with three or more rows with consecutive id's, and the number of people is greater than or equal to 100 for each.
+
+Return the result table ordered by visit_date in ascending order.
+
+### Resolução
+```
+SELECT DISTINCT t1.*
+FROM stadium t1, stadium t2, stadium t3
+WHERE (t1.people >= 100 AND
+       t2.people >= 100 AND
+       t3.people >= 100 AND (
+       (t1.id - t2.id = 1 AND t1.id - t3.id = 2 AND t2.id - t3.id = 1) OR
+       (t2.id - t1.id = 1 AND t2.id - t3.id = 2 AND t1.id - t3.id = 1) OR
+       (t3.id - t2.id = 1 AND t2.id - t1.id = 1 AND t3.id - t1.id = 2)))
+ORDER BY t1.id
+```
+
+### Explicação
+A partir de três tabelas iguais, condiciona-as de modo que:
+  - Todas as pessoas das tabelas devem ser maiores que 100
+  - Seja necessário a consecutividade dentre os id, independente da ordem.
+
+
+
+## 607. Sales Person
+
+Table: SalesPerson
+```
++-----------------+---------+
+| Column Name     | Type    |
++-----------------+---------+
+| sales_id        | int     |
+| name            | varchar |
+| salary          | int     |
+| commission_rate | int     |
+| hire_date       | date    |
++-----------------+---------+
+```
+sales_id is the primary key column for this table.
+Each row of this table indicates the name and the ID of a salesperson alongside their salary, commission rate, and hire date.
+ 
+
+Table: Company
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| com_id      | int     |
+| name        | varchar |
+| city        | varchar |
++-------------+---------+
+```
+com_id is the primary key column for this table.
+Each row of this table indicates the name and the ID of a company and the city in which the company is located.
+ 
+
+Table: Orders
+```
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| order_id    | int  |
+| order_date  | date |
+| com_id      | int  |
+| sales_id    | int  |
+| amount      | int  |
++-------------+------+
+```
+order_id is the primary key column for this table.
+com_id is a foreign key to com_id from the Company table.
+sales_id is a foreign key to sales_id from the SalesPerson table.
+Each row of this table contains information about one order. This includes the ID of the company, the ID of the salesperson, the date of the order, and the amount paid.
+ 
+
+Write an SQL query to report the names of all the salespersons who did not have any orders related to the company with the name "RED".
+
+Return the result table in any order.
+
+### Resolução
+```
+SELECT s.name
+FROM salesperson s
+WHERE s.sales_id NOT IN (
+    SELECT o.sales_id
+    FROM orders o
+    LEFT JOIN company c ON o.com_id = c.com_id
+    WHERE c.name = 'RED')
+```
+
+### Explicação
+Primeiro, cria-se uma subquery, a qual seleciona o sales_id, da tabela orders, e junta-o, em um LEFT JOIN, com a tabela company, considernado que o com_id de ambas tabelas sejam iguais. Após isso, coloca-se a exigência do nome da companhia ser 'RED'.
+Desse modo, na query principal, seleciona-se o nome do vendedor, da tabela salesperson, que não está na subquery
+
+
+
+## 608. Tree Node
+
+Table: Tree
+```
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| id          | int  |
+| p_id        | int  |
++-------------+------+
+```
+id is the primary key column for this table.
+Each row of this table contains information about the id of a node and the id of its parent node in a tree.
+The given structure is always a valid tree.
+ 
+
+Each node in the tree can be one of three types:
+
+"Leaf": if the node is a leaf node.
+"Root": if the node is the root of the tree.
+"Inner": If the node is neither a leaf node nor a root node.
+Write an SQL query to report the type of each node in the tree.
+
+Return the result table ordered by id in ascending order.
+
+### Resolução
+```
+SELECT id, 'Root' AS Type
+FROM tree
+WHERE p_id IS NULL
+
+UNION
+
+SELECT id, 'Leaf' AS Type
+FROM tree
+WHERE id NOT IN (
+    SELECT DISTINCT p_id
+    FROM tree
+    WHERE p_id IS NOT NULL) AND p_id IS NOT NULL
+    
+UNION
+
+SELECT id, 'Inner' AS Type
+FROM tree
+WHERE id IN (
+    SELECT DISTINCT p_id
+    FROM tree
+    WHERE p_id IS NOT NULL) AND p_id IS NOT NULL
+GROUP BY id
+```
+
+### Explicação
+O objetivo é criar os tipos de nós, baseando-se no número de nós pais, de modo que:
+  - Caso o p_id seja nulo, é caracterizado como Root (ou seja, não tem pai)
+  - Caso o p_id seja existente (tenha um pai) e o id não seja referenciado (não tem filho), é caracterizado como Leaf
+  - Caso o p_id seja existente (tenha um pai) e o id seja referenciado (tem filho), é caracterizado como Inner
+Desse modo, há a união das três situações e o agrupamento pelo id.
+
+
+
+## 620. Not Boring Movies
+
+Table: Cinema
+```
++----------------+----------+
+| Column Name    | Type     |
++----------------+----------+
+| id             | int      |
+| movie          | varchar  |
+| description    | varchar  |
+| rating         | float    |
++----------------+----------+
+```
+id is the primary key for this table.
+Each row contains information about the name of a movie, its genre, and its rating.
+rating is a 2 decimal places float in the range [0, 10]
+ 
+
+Write an SQL query to report the movies with an odd-numbered ID and a description that is not "boring".
+
+Return the result table ordered by rating in descending order.
+
+### Resolução
+```
+SELECT *
+FROM Cinema
+WHERE MOD(id, 2) = 1 AND description != 'boring'
+ORDER BY rating DESC
+```
+
+### Explicação
+Coloca-se a exigência do id ser ímpar (MOD(id,2) = 1), e a descrição ser diferente de 'boring'.
+Após isso, ordena os elementos de modo que o rating seja decrescente.
+
+
+
+## 626. Exchange Seats
+
+Table: Seat
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| name        | varchar |
++-------------+---------+
+```
+id is the primary key column for this table.
+Each row of this table indicates the name and the ID of a student.
+id is a continuous increment.
+ 
+
+Write an SQL query to swap the seat id of every two consecutive students. If the number of students is odd, the id of the last student is not swapped.
+
+Return the result table ordered by id in ascending order.
+
+### Resolução
+```
+SELECT (CASE
+            WHEN MOD(id, 2) != 0 AND counts != id THEN id + 1
+            WHEN MOD(id, 2) != 0 AND counts = id THEN id
+            ELSE id - 1
+        END) AS id, student
+FROM seat, (SELECT COUNT(*) AS counts
+            FROM seat) AS seat_counts
+ORDER BY id ASC
+```
+
+### Explicação
+Cria-se uma subquery que conta o número de assentos.
+Após isso, na query principal, caso o id não ser par e o número de assentos ser diferente do id, então é adicionado 1 ao id. Caso o id não ser par e o número de assento ser igual ao id, então o id é mantido. Por fim, caso o id seja par, então é subraído 1 do id. (Em outras palavras, o id 1 vira id 2, o id 2 vira id 1 e, se o número de assentos ser ímpar, o último id continua o mesmo, caso contrário, o penúltimo id (ímpar) vira o último e o último id (par) vira o penúltimo.
+Após isso, é ordenado, de modo ascendente, o id.
+
+
+## 627. Swap Salary
+
+Table: Salary
+```
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| id          | int      |
+| name        | varchar  |
+| sex         | ENUM     |
+| salary      | int      |
++-------------+----------+
+```
+id is the primary key for this table.
+The sex column is ENUM value of type ('m', 'f').
+The table contains information about an employee.
+ 
+
+Write an SQL query to swap all 'f' and 'm' values (i.e., change all 'f' values to 'm' and vice versa) with a single update statement and no intermediate temporary tables.
+
+Note that you must write a single update statement, do not write any select statement for this problem.
+
+
+### Resolução
+```
+UPDATE salary
+SET
+    sex = IF (sex = 'm', 'f', 'm')
+```
+
+### Explicação
+Atualiza a tabela, usando IF, caso o sexo seja 'm', é trocado por 'f', caso não seja, é trocado por 'm'.
+
+
+
+## 1050. Actors and Directors Who Cooperated At Least Three Times
+
+Table: ActorDirector
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| actor_id    | int     |
+| director_id | int     |
+| timestamp   | int     |
++-------------+---------+
+```
+timestamp is the primary key column for this table.
+ 
+
+Write a SQL query for a report that provides the pairs (actor_id, director_id) where the actor has cooperated with the director at least three times.
+
+Return the result table in any order.
+
+
+### Resolução
+```
+SELECT actor_id, director_id
+FROM ActorDirector
+GROUP BY actor_id, director_id
+HAVING COUNT(timestamp) >= 3
+```
+
+### Explicação
+Agrupa-se a tabela de acordo com o actor_id e director_id, com isso, caso haja, para esse agrupamento, um número de timestamp maior ou igual a 3, é selecionado pela query.
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
