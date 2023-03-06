@@ -1163,62 +1163,266 @@ Agrupa-se a tabela de acordo com o actor_id e director_id, com isso, caso haja, 
 
 
 
-## 
+## 1084. Sales Analysis III
+
+Table: Product
+```
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| product_id   | int     |
+| product_name | varchar |
+| unit_price   | int     |
++--------------+---------+
+```
+product_id is the primary key of this table.
+Each row of this table indicates the name and the price of each product.
+Table: Sales
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| seller_id   | int     |
+| product_id  | int     |
+| buyer_id    | int     |
+| sale_date   | date    |
+| quantity    | int     |
+| price       | int     |
++-------------+---------+
+```
+This table has no primary key, it can have repeated rows.
+product_id is a foreign key to the Product table.
+Each row of this table contains some information about one sale.
+ 
+
+Write an SQL query that reports the products that were only sold in the first quarter of 2019. That is, between 2019-01-01 and 2019-03-31 inclusive.
+
+Return the result table in any order.
+
+### Resolução
+```
+SELECT product_id, product_name
+FROM Product
+WHERE product_id IN (
+    SELECT DISTINCT product_id
+    FROM Sales
+    WHERE sale_date BETWEEN '2019-01-01' AND '2019-03-31'
+    )  AND product_id NOT IN (
+        SELECT DISTINCT product_id
+        FROM Sales
+        WHERE sale_date < '2019-01-01' OR sale_date > '2019-03-31'
+)
+```
+
+### Explicação
+Primeiro, cria-se uma primeira subquery, que seleciona distintos product_id que tem sua data de venda antes de 2019-01-01 e depois de 2019-03-01.
+Após isso, cria-se uma segunda subquery, que seleciona distintos product_id que tem sua data de venda entre 2019-01-01 e 2019-03-31.
+Por fim, seleciona-se apenas os product_id que estão na segunda subquery e não estão na primeira subquery.
+
+
+
+## 1141. User Activity for the Past 30 Days I
+
+Table: Activity
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | int     |
+| session_id    | int     |
+| activity_date | date    |
+| activity_type | enum    |
++---------------+---------+
+```
+There is no primary key for this table, it may have duplicate rows.
+The activity_type column is an ENUM of type ('open_session', 'end_session', 'scroll_down', 'send_message').
+The table shows the user activities for a social media website. 
+Note that each session belongs to exactly one user.
+ 
+
+Write an SQL query to find the daily active user count for a period of 30 days ending 2019-07-27 inclusively. A user was active on someday if they made at least one activity on that day.
+
+Return the result table in any order.
 
 
 ### Resolução
 ```
+SELECT activity_date AS 'day', COUNT(DISTINCT user_id) AS 'active_users'
+FROM Activity
+WHERE activity_date BETWEEN '2019-06-28' AND '2019-07-27'
+GROUP BY day
 ```
 
 ### Explicação
+Seleciona-se a activity_date como day e a contagem de distintos user_id como active_users, com a condição que a activity_date esteja entre 2019-06-28 e 2019-07-27 e agrupa-se por day.
 
 
 
+## 1148. Article Views I
 
-## 
+Table: Views
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| article_id    | int     |
+| author_id     | int     |
+| viewer_id     | int     |
+| view_date     | date    |
++---------------+---------+
+```
+There is no primary key for this table, it may have duplicate rows.
+Each row of this table indicates that some viewer viewed an article (written by some author) on some date. 
+Note that equal author_id and viewer_id indicate the same person.
+ 
+
+Write an SQL query to find all the authors that viewed at least one of their own articles.
+
+Return the result table sorted by id in ascending order.
 
 
 ### Resolução
 ```
+SELECT DISTINCT author_id AS 'id'
+FROM Views
+WHERE author_id = viewer_id
+ORDER BY id
+
 ```
 
 ### Explicação
+Seleciona-se distintos author_id como id, dado que o author_id do aritgo seja o mesmo que viewee_id do artigo.
+Por fim, ordana-se por id.
 
 
+## 1158. Market Analysis I
+Table: Users
+```
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| user_id        | int     |
+| join_date      | date    |
+| favorite_brand | varchar |
++----------------+---------+
+```
+user_id is the primary key of this table.
+This table has the info of the users of an online shopping website where users can sell and buy items.
+ 
 
+Table: Orders
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| order_id      | int     |
+| order_date    | date    |
+| item_id       | int     |
+| buyer_id      | int     |
+| seller_id     | int     |
++---------------+---------+
+```
+order_id is the primary key of this table.
+item_id is a foreign key to the Items table.
+buyer_id and seller_id are foreign keys to the Users table.
+ 
 
-## 
+Table: Items
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| item_id       | int     |
+| item_brand    | varchar |
++---------------+---------+
+```
+item_id is the primary key of this table.
+ 
+
+Write an SQL query to find for each user, the join date and the number of orders they made as a buyer in 2019.
+
+Return the result table in any order.
 
 
 ### Resolução
 ```
+SELECT user_id AS 'buyer_id', join_date, 0 AS 'orders_in_2019'
+FROM Users
+WHERE user_id NOT IN (
+    SELECT buyer_id
+    FROM Orders
+    WHERE   order_date >= '2019-01-01' AND order_date <= '2019-12-31'
+)
+
+UNION
+
+SELECT u.user_id AS 'buyer_id', u.join_date, COUNT(tb.order_id) AS 'orders_in_2019'
+FROM (
+    SELECT *
+    FROM Orders
+    WHERE order_date >= '2019-01-01' AND order_date <= '2019-12-31') tb
+LEFT JOIN Users u
+ON tb.buyer_id = u.user_id
+GROUP BY u.user_id
 ```
 
 ### Explicação
+1.
+ a. Primeiro, cria-se uma subquery que seleciona apenas buyer_id que tenham sua order_date após 2019-01-01 e antes de 2019-12-31.
+ b. Após isso, seleciona-se o user_id, como buyer_id, e join_date, como orders_in_2019, com a condição que o user_id não esteja na subquery.
+ 
+2.
+ a. Cria-se uma subquery, que seleciona apenas a order_date após 2019-01-01 e antes de 2019-12-31.
+ b. Após isso, seleciona-se, de uma tabela principal (u), u.user_id, como buyer_id, u.join_date e, de uma tabela secundária (tb), a contagem de tb.order_id, como orders_in_2019.
+ c. Depois, com o uso de left join, a partir da tabela principal (u), junta-se as duas tabelas, dado que tb.buyer_id seja igual a u.user_id.
+ d. Por fim, agrupa-se por u.user_id
+
+3. Uni-se 1. e 2.
 
 
 
-## 
+## 1179. Reformat Department Table
+Table: Department
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| revenue     | int     |
+| month       | varchar |
++-------------+---------+
+```
+(id, month) is the primary key of this table.
+The table has information about the revenue of each department per month.
+The month has values in ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].
+ 
+
+Write an SQL query to reformat the table such that there is a department id column and a revenue column for each month.
+
+Return the result table in any order.
 
 
 ### Resolução
 ```
+SELECT id, SUM(CASE WHEN month = 'Jan' THEN revenue ELSE null END) AS 'Jan_Revenue',
+    SUM(CASE WHEN month = 'Feb' THEN revenue ELSE null END) AS 'Feb_Revenue',
+    SUM(CASE WHEN month = 'Mar' THEN revenue ELSE null END) AS 'Mar_Revenue',
+    SUM(CASE WHEN month = 'Apr' THEN revenue ELSE null END) AS 'Apr_Revenue',
+    SUM(CASE WHEN month = 'May' THEN revenue ELSE null END) AS 'May_Revenue',
+    SUM(CASE WHEN month = 'Jun' THEN revenue ELSE null END) AS 'Jun_Revenue',
+    SUM(CASE WHEN month = 'Jul' THEN revenue ELSE null END) AS 'Jul_Revenue',
+    SUM(CASE WHEN month = 'Aug' THEN revenue ELSE null END) AS 'Aug_Revenue',
+    SUM(CASE WHEN month = 'Sep' THEN revenue ELSE null END) AS 'Sep_Revenue',
+    SUM(CASE WHEN month = 'Oct' THEN revenue ELSE null END) AS 'Oct_Revenue',
+    SUM(CASE WHEN month = 'Nov' THEN revenue ELSE null END) AS 'Nov_Revenue',
+    SUM(CASE WHEN month = 'Dec' THEN revenue ELSE null END) AS 'Dec_Revenue'
+FROM Department
+GROUP BY id
 ```
 
 ### Explicação
-
-
-
-
-## 
-
-
-### Resolução
-```
-```
-
-### Explicação
-
+Seleciona-se o id e a soma de cada receita de cada mês como mês_Revenue.
+Por fim, agrupa-pe por id.
 
 
 
