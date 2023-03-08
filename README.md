@@ -1426,6 +1426,138 @@ Por fim, agrupa-pe por id.
 
 
 
+## 1393. Capital Gain/Loss
+Table: Stocks
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| stock_name    | varchar |
+| operation     | enum    |
+| operation_day | int     |
+| price         | int     |
++---------------+---------+
+```
+(stock_name, operation_day) is the primary key for this table.
+The operation column is an ENUM of type ('Sell', 'Buy')
+Each row of this table indicates that the stock which has stock_name had an operation on the day operation_day with the price.
+It is guaranteed that each 'Sell' operation for a stock has a corresponding 'Buy' operation in a previous day. It is also guaranteed that each 'Buy' operation for a stock has a corresponding 'Sell' operation in an upcoming day.
+ 
+
+Write an SQL query to report the Capital gain/loss for each stock.
+
+The Capital gain/loss of a stock is the total gain or loss after buying and selling the stock one or many times.
+
+Return the result table in any order.
+
+
+### Resolução
+```
+SELECT stock_name, SUM(total_sell) - SUM(total_buy) AS capital_gain_loss
+FROM (
+    SELECT stock_name,
+        CASE WHEN operation = 'Buy' THEN price ELSE '0' END AS total_buy,
+        CASE WHEN operation = 'Sell' THEN price ELSE '0' END AS total_sell
+    FROM Stocks) a
+GROUP BY 1
+```
+
+### Explicação
+Primeiro, cria-se uma subquery, que seleciona o stock_name em dois casos, estes sendo:
+ a. Caso a opção seja Buy, então price é chamado de total_buy.
+ b. Caso a opção seja Sell, então price é chamado de total_sell.
+Assim, na query principal, é selecionado o stock_name e a diferença da soma de todos total_sell com todos total_buy, nomeado de capital_gain_loss.
+Por fim, é agrupado pelo stock_name
+
+
+## 1407. Top Travellers
+SQL Schema
+Table: Users
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| name          | varchar |
++---------------+---------+
+```
+id is the primary key for this table.
+name is the name of the user.
+ 
+
+Table: Rides
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| user_id       | int     |
+| distance      | int     |
++---------------+---------+
+```
+id is the primary key for this table.
+user_id is the id of the user who traveled the distance "distance".
+ 
+
+Write an SQL query to report the distance traveled by each user.
+
+Return the result table ordered by travelled_distance in descending order, if two or more users traveled the same distance, order them by their name in ascending order.
+
+
+
+
+### Resolução
+```
+SELECT u.name AS name, IF(r.distance IS null, 0, SUM(r.distance)) AS travelled_distance
+FROM Users u
+LEFT JOIN Rides r ON u.id = r.user_id
+GROUP BY name
+ORDER BY travelled_distance DESC, name
+```
+
+### Explicação
+Sendo a tabela User (u) e a tabela Rides (r), é selecionado u.name e travelled_distance, que é a expressão condicional e evidencia que, caso a r.distance seja nula, então o valor é 0 e, caso o contrário, o valor é a soma de r.distance.
+Assim, junta-se à tebla Rides r, com um left join, de modo que u.id seja igual a r.user_Id.
+Por fim, é agrupado por name e ordenado tanto por name, quanto por travelled_distance, em modo decrescente
+
+
+
+## 1484. Group Sold Products By The Date
+Table Activities:
+```
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| sell_date   | date    |
+| product     | varchar |
++-------------+---------+
+```
+There is no primary key for this table, it may contain duplicates.
+Each row of this table contains the product name and the date it was sold in a market.
+ 
+
+Write an SQL query to find for each date the number of different products sold and their names.
+
+The sold products names for each date should be sorted lexicographically.
+
+Return the result table ordered by sell_date.
+
+
+### Resolução
+```
+SELECT sell_date, COUNT(DISTINCT product) AS num_sold,
+        GROUP_CONCAT(DISTINCT product
+                     ORDER BY product) AS products
+FROM Activities
+GROUP BY sell_date
+ORDER BY sell_date
+```
+
+### Explicação
+Seleciona sell_date, COUNT(DISTINCT product), como num_sold, e a concatenação de produtos distintos, que são ordenamdos por product, como products.
+Além disso, é agrupado e ordenado por sell_date.
+
+
 ## 
 
 
@@ -1436,6 +1568,14 @@ Por fim, agrupa-pe por id.
 ### Explicação
 
 
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
 
 
 ## 
@@ -1448,6 +1588,14 @@ Por fim, agrupa-pe por id.
 ### Explicação
 
 
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
 
 
 ## 
@@ -1459,6 +1607,75 @@ Por fim, agrupa-pe por id.
 
 ### Explicação
 
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
+
+
+## 
+
+
+### Resolução
+```
+```
+
+### Explicação
 
 
 ## 
